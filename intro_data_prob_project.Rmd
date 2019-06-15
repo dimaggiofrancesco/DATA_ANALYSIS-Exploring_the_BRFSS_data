@@ -1,0 +1,175 @@
+---
+title: "Exploring the BRFSS data (http://www.cdc.gov/brfss/)"
+output:
+  html_document:
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+  pdf_document: default
+---
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+library(statsr)
+library(devtools)
+```
+
+### Load data
+
+
+```{r load-data}
+load("brfss2013.RData")
+```
+
+* * *
+
+## Part 1: Data
+Generabizability: The results are NOT generalizable. This is due to the not random nature of the sampling. In particular only a fraction of the population with specific characteristics partecipate to this study. The surveyed people must be adult in household and having their landline telephone public (accessible to everybody and so also to the surveyor) or people with cellular telephone residing in a private residence or college housing. The survey for example does not cover people which are not in posses of landline telephone or a cellular (this could be a source of non-response bias). The study is NOT GENERALIZABLE. 
+
+Causality: This is an observational study. In particular, this observational study is a survey. The researcher observes the subjects and measures variables, but does not influence the population in any way or attempt to intervene on the study. The data are simply collected and analysed to find correlation. Due to the nature of the study (observational), the results can only allow the researcher to claim association but not causation. Hence in this study it is NOT POSSIBLE TO INFER CAUSATION.
+
+
+* * *
+
+## Part 2: Research questions
+
+**Research quesion 1:**
+Is there a correlation in between the income level and the study educational level? There might be a correlation in between the 2 variables. People having higher education might gain higher salary.
+
+
+**Research quesion 2:**
+Is there a correlation in between the number or fruit eaten per month and the number of sport activities? Are healthy people more likely to do sport activity to keep their body fit and vice-versa (people doing more sport activities tend to eat healthy food)?
+
+
+**Research quesion 3:**
+Is there a correlation in between people feeling depressed and the amount of time they sleep. The two variables can be linked somehow and could be directly related?
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+**Research quesion 1:**
+
+```{r}
+
+## Cleans, filters and groups 2 variables of the database
+answer1 <- brfss2013 [,c('educa','income2')] #Creates a database "answer3" with only 2 columns from the main db
+answer1 <- answer1[complete.cases(answer1),] #Removes the rows which have NA values
+answer1 <- answer1 %>% group_by(income2,educa) %>% #it groups for income2 first and educa afterwards
+  summarise(count = n())
+
+
+# Creates plot and personalises it (size, face, color, position, etc)
+ggplot(data = answer1, aes(fill=income2,x = educa, y = count)) +
+  geom_bar(position="dodge", stat="identity") +
+  theme(axis.text.x = element_text(angle = 90,size=9,face="bold",hjust=0.95,vjust=0.4)) +
+  theme(axis.text.y = element_text(size=9,face="bold")) +
+  theme(legend.title = element_text(color="blue", size=9,face='bold'),
+        legend.text = element_text(color="black",size=9,face='bold'),
+        legend.position="top",legend.background = element_rect(fill = "gray"),
+        legend.key.size = unit(0.4, "cm"),legend.key.width = unit(0.3,"cm")) +
+  labs(x="Educational Level",size=12, face='bold', fill='Income Level') +
+  labs(y="Number of People",size=12, face='bold') + 
+  scale_x_discrete(breaks=c("Never attended school or only kindergarten", #Rename column names
+                            "Grades 1 through 8 (Elementary)",
+                            "Grades 9 though 11 (Some high school)",
+                            "Grade 12 or GED (High school graduate)",
+                            "College 1 year to 3 years (Some college or technical school)",
+                            "College 4 years or more (College graduate)"),
+                   labels=c("NEVER ATTENDED SCHOOL",
+                            "ELEMENTARY",
+                            "HIGH SCHOOL",
+                            "HIGH SCHOOL GRADUATE",
+                            "COLLEGE",
+                            "COLLEGE GRADUATE"))
+
+```
+
+#Answer question 1:
+The answer is yes. The higher the educational level the higher the income. At Elementary and high school level the trend is decreasing (e.g. people exiting those schools have lower income). People leaving school at the level of high school graduate show a gaussian trend whereas citizen leavign school at college or higher degree tend to have highest salary.
+
+**Research quesion 2:**
+
+```{r}
+
+## Cleans, filters and groups 2 variables of the database
+answer2 <- brfss2013 [,c('exeroft1','fruit1')]
+answer2 <- answer2[complete.cases(answer2),]
+answer2 <- dplyr::filter(answer2, between(answer2$exeroft1, 200, 300) & between(answer2$fruit1,300,400)) #filters numbers in between 200 and 300 for column 1 and 300 and 400 for column 2.
+A <- function(x) x - 200 #creates functions that will be used later 
+B <- function(x) x - 300 #creates functions that will be used later 
+answer2 <- answer2 %>%
+  group_by(exeroft1) %>%
+  summarise_at(vars(fruit1), list(mean))
+answer2 <- data.frame(lapply(answer2[1], A), lapply (answer2[2],B)) #subtracts the value of 200 from column 1 and 300 from column 2. This is done because the 200 and 300 are prefix of the actual value. 301 means 1 fruit eaten per monht. 302 means 2 fruits eaten per month and so on. 
+
+
+## Creates plot and personalises it (size, face, color, position, etc)
+ggplot(answer2,aes(x=exeroft1,y=fruit1)) +
+  geom_point()+ 
+  stat_smooth(method="lm", formula = y~(x),colour="blue",fill="blue", alpha = 0.1) +
+  stat_smooth(method="lm", formula = y~log(x),colour="red",fill="red", alpha = 0.1) +
+  theme(axis.text.x = element_text(angle = 90,size=9,face="bold",hjust=0.95,vjust=0.4)) +
+  theme(axis.text.y = element_text(size=9,face="bold")) +
+  labs(x="Times of sport activity per month",size=12, face='bold', fill='Income Level') +
+  labs(y="Number of eaten fruit per month",size=12, face='bold')
+
+##Creates linear and log fit and summaryses the results
+linfunc <- lm(answer2$fruit1~answer2$exeroft1, data = answer2) #creates linear function
+summary(linfunc) #summary of linear function
+
+logfunc <- lm(answer2$fruit1~log(answer2$exeroft1), data = answer2) #creates log function
+summary(logfunc) #summary of log function
+
+```
+
+#Answer question 2:
+H0 (Null Hipothesys) = the trend is linear
+Ha (Alternative hypothesis) = the trend is linear positive
+
+The p-value is 0.20 with a linear regression which is higher than the confident level of 0.05. So I reject the alternative hypothesis. 
+
+Another alternative hypothesis: The plot follow a logarithmic trend (y = log (x)).
+
+The p-value using this function was 0.029, lower than the confident level. So I can reject the null hypotesis and accept the alternative hypotesis where the trend is increasing following a logarithmic function.
+
+
+**Research quesion 3:**
+
+```{r}
+
+## Cleans, filters and groups 2 variables of the database
+answer3 <- brfss2013 [,c('sleptim1','misdeprd','sex')] #Creates a database "answer3" with only 2 columns from the main db
+answer3 <- dplyr::filter(answer3, between(answer3$sleptim1, 0, 31)) #filters numbers in between 200 and 300 for column 1 and 300 and 400 for column 2.
+answer3 <- answer3[complete.cases(answer3),] #Removes the rows which have NA values
+
+answer3summary <- answer3 %>%
+  group_by(misdeprd) %>% #groups first for misdeprd and then for sex
+  summarise(n = n(), mean = mean(sleptim1), sd = sd(sleptim1)) #summarises the data and calculates the mean for sleptim1
+
+##Creates scatterplot
+ggplot (data = answer3summary, aes(x=misdeprd, y = mean)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = mean-sd/2, ymax = mean+sd/2)) +
+  ggtitle("Correlation sleeping time vs feeling depressed") + 
+  ylab('Sleeping time in a 24-hour period (hours)') + 
+  xlab ('Feeling depressed in the past 30 days (times)')
+
+##Creates boxplot
+ggplot(data = answer3, aes(x=misdeprd, y=sleptim1)) + 
+  geom_boxplot(aes(fill=sex)) + #groups per sex (female and male)
+ # coord_flip() + #rotate the graph (x and y axis)
+  ggtitle("Correlation sleeping time vs feeling depressed
+          DIFFERENCE MALE VS FEMALE") + 
+  ylab('Sleeping time in a 24-hour period (hours)') + 
+  xlab ('Feeling depressed in the past 30 days (times)') 
+
+```
+
+#Answer question 3: 
+it seems to be a correlation in between the two variables since the amount of sleeping time is lower when people feel very depressed and higher when people do not feel depressed.
