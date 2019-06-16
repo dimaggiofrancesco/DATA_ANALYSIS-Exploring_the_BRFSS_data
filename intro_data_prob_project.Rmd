@@ -10,9 +10,7 @@ output: rmarkdown::github_document
   pdf_document: default
 ---
 This is an R Markdown document that I used to learn statistics using R on coursera platform
-
-
-
+---
 
 ## Create md file
 ```{r setup, include = FALSE, cache = FALSE}  
