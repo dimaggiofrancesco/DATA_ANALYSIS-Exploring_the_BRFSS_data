@@ -1,6 +1,6 @@
 ---
 title: "Exploring the BRFSS data (http://www.cdc.gov/brfss/)"
-author: "dinaggio_francesco"
+author: "dimaggio_francesco"
 date: "June 6, 2019"
 output: rmarkdown::github_document
   html_document:
