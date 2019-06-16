@@ -1,12 +1,25 @@
 ---
 title: "Exploring the BRFSS data (http://www.cdc.gov/brfss/)"
-output:
+author: "dinaggio_francesco"
+date: "June 6, 2019"
+output: rmarkdown::github_document
   html_document:
     fig_height: 4
     highlight: pygments
     theme: spacelab
   pdf_document: default
 ---
+This is an R Markdown document that I used to learn statistics using R on coursera platform
+
+
+
+
+## Create md file
+```{r setup, include = FALSE, cache = FALSE}  
+knitr::opts_chunk$set(error = TRUE)  
+getwd()
+```
+
 
 ## Setup
 
@@ -87,6 +100,7 @@ ggplot(data = answer1, aes(fill=income2,x = educa, y = count)) +
                             "HIGH SCHOOL GRADUATE",
                             "COLLEGE",
                             "COLLEGE GRADUATE"))
+ggsave("Graph1.png")
 
 ```
 
@@ -126,6 +140,8 @@ summary(linfunc) #summary of linear function
 logfunc <- lm(answer2$fruit1~log(answer2$exeroft1), data = answer2) #creates log function
 summary(logfunc) #summary of log function
 
+ggsave("Graph2.png")
+
 ```
 
 #Answer question 2:
@@ -159,7 +175,7 @@ ggplot (data = answer3summary, aes(x=misdeprd, y = mean)) +
   ggtitle("Correlation sleeping time vs feeling depressed") + 
   ylab('Sleeping time in a 24-hour period (hours)') + 
   xlab ('Feeling depressed in the past 30 days (times)')
-
+  ggsave("Graph3a.png")
 ##Creates boxplot
 ggplot(data = answer3, aes(x=misdeprd, y=sleptim1)) + 
   geom_boxplot(aes(fill=sex)) + #groups per sex (female and male)
@@ -168,6 +184,7 @@ ggplot(data = answer3, aes(x=misdeprd, y=sleptim1)) +
           DIFFERENCE MALE VS FEMALE") + 
   ylab('Sleeping time in a 24-hour period (hours)') + 
   xlab ('Feeling depressed in the past 30 days (times)') 
+  ggsave("Graph3b.png")
 
 ```
 
