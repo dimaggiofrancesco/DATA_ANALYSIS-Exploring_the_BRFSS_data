@@ -2,8 +2,7 @@
 
 # DATA_ANALYSIS-Exploring_the_BRFSS_data
 
-*This repository was taken from an assignment I did on Coursera.org platform:  
-Applied Plotting, Charting & Data Representation in Python*
+*This repository was taken from an assignment I did on Coursera.org platform*
 
 **What is BRFSS:**  
 The Behavioral Risk Factor Surveillance System (BRFSS) is the nation’s premier system of health-related telephone surveys that collect state data about U.S. residents regarding their health-related risk behaviors, chronic health conditions, and use of preventive services.
